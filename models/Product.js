@@ -14,7 +14,8 @@ const ProductSchema = mongoose.Schema({
     ref: 'Category', // Debe coincidir con el nombre del modelo de categoría, no de la colección
     required: true 
   },
-  status:{type: String, required: true}
+  status:{type: String, required: true},
+  discount: { type: Number, required: true },
 }, { collection: 'product' }); // Nombre exacto de la colección en MongoDB
 
 // Modelo de Producto

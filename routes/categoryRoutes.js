@@ -3,7 +3,7 @@ const router = express.Router();
 const categoryController = require('../controllers/categoryController'); // Asegúrate de que la ruta es correcta
 
 // Usa los métodos del controlador en las rutas
-router.get('/', categoryController.getCategories); // Asegúrate de que getCategories esté definido
-router.post('/', categoryController.addCategory);  // Asegúrate de que addCategory esté definido
+router.get('/', categoryController.getCategories);
+router.post('/', categoryController.addCategory);
 
 module.exports = router;
