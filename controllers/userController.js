@@ -1,5 +1,10 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken'); // Importa JWT
+
+const generateToken = (id) => {
+    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' }); // Expira en 7 días
+};
 
 // Obtener todos los usuarios
 exports.getUsers = async (req, res) => {
@@ -69,16 +74,57 @@ exports.loginUser = async (req, res) => {
             return res.status(401).json({ message: 'Contraseña incorrecta' });
         }
 
-        res.status(200).json({ 
-            message: 'Inicio de sesión exitoso', 
-            department: existingUser.department,
-            nombre: existingUser.nombre,
-            apellido: existingUser.apellido,
-            email: existingUser.email,
-            fecha_ingreso: existingUser.fecha_ingreso
+        // Generar token
+        const token = generateToken(existingUser._id);
+
+        res.status(200).json({
+            message: 'Inicio de sesión exitoso',
+            token, // Devuelve el token
+            user: {
+                id: existingUser._id,
+                department: existingUser.department,
+                nombre: existingUser.nombre,
+                apellido: existingUser.apellido,
+                email: existingUser.email,
+                fecha_ingreso: existingUser.fecha_ingreso,
+            },
         });
     } catch (error) {
         console.error('Error al iniciar sesión:', error);
         res.status(500).json({ message: 'Error al iniciar sesión', error: error.message });
+    }
+};
+
+// Validar token
+exports.validateToken = async (req, res) => {
+    console.log('Authorization Header:', req.headers.authorization); 
+    const token = req.headers.authorization?.split(' ')[1]; // Extrae el token del encabezado
+
+    if (!token) {
+        return res.status(401).json({ message: 'No autorizado. No se proporcionó token.' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verifica el token
+        const user = await User.findById(decoded.id).select('-password'); // Obtén el usuario sin la contraseña
+
+        if (!user) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        res.status(200).json({
+            message: 'Token válido',
+            user: {
+                id: user._id,
+                department: user.department,
+                nombre: user.nombre,
+                apellido: user.apellido,
+                email: user.email,
+                fecha_ingreso: user.fecha_ingreso,
+            },
+        });
+    } catch (error) {
+        console.error('Error al validar token:', error);
+        res.status(401).json({ message: 'Token inválido o expirado' });
     }
 };

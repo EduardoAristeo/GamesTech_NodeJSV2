@@ -145,3 +145,46 @@ exports.uploadProductImage = (req, res) => {
         res.status(500).json({ message: 'Error al subir la imagen.', error: error.message });
     }
 };
+
+exports.updateProductImage = (req, res) => {
+    try {
+        // Validar si se subió un archivo
+        if (!req.file) {
+            return res.status(400).json({ message: 'Imagen no proporcionada.' });
+        }
+
+        // Obtener el ID del producto desde el body de la solicitud
+        const productId = req.body.productId;
+        if (!productId) {
+            fs.unlinkSync(req.file.path); // Eliminar el archivo temporal
+            return res.status(400).json({ message: 'ID de producto no proporcionado.' });
+        }
+
+        // Validar que el ID sea un ObjectId válido usando mongoose.Types.ObjectId
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            fs.unlinkSync(req.file.path); // Eliminar el archivo temporal
+            return res.status(400).json({ message: 'ID de producto inválido.' });
+        }
+
+        // Crear la ruta final de la imagen
+        const finalPath = path.join(__dirname, `../public/uploads/products/${productId}.png`);
+
+        // Verificar si ya existe una imagen para este producto
+        if (fs.existsSync(finalPath)) {
+            fs.unlinkSync(finalPath); // Eliminar la imagen existente
+        }
+
+        // Mover el archivo al destino final
+        fs.rename(req.file.path, finalPath, (err) => {
+            if (err) {
+                console.error('Error al renombrar la imagen:', err);
+                return res.status(500).json({ message: 'Error al procesar la imagen.' });
+            }
+
+            res.status(200).json({ message: 'Imagen actualizada exitosamente.' });
+        });
+    } catch (error) {
+        console.error('Error al actualizar la imagen:', error);
+        res.status(500).json({ message: 'Error al actualizar la imagen.', error: error.message });
+    }
+};

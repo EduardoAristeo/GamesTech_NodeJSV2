@@ -78,3 +78,26 @@ exports.deleteClient = async (req, res) => {
         res.status(500).json({ message: 'Error al eliminar el cliente', error: error.message });
     }
 };
+
+exports.searchClient = async (req, res) => {
+    try {
+      const { firstName, lastName, phone } = req.body;
+  
+      // Búsqueda flexible: por nombre y teléfono
+      const query = {};
+      if (firstName) query.firstName = new RegExp(firstName, 'i'); // Búsqueda parcial (case-insensitive)
+      if (lastName) query.lastName = new RegExp(lastName, 'i');
+      if (phone) query.phone = phone;
+  
+      const clients = await Client.find(query).limit(10); // Limitar los resultados
+      if (clients.length === 0) {
+        return res.status(404).json({ message: 'No se encontraron clientes' });
+      }
+  
+      res.status(200).json(clients);
+    } catch (error) {
+      console.error('Error al buscar clientes:', error);
+      res.status(500).json({ message: 'Error al buscar clientes', error: error.message });
+    }
+  };
+  

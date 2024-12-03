@@ -1,29 +1,33 @@
 const mongoose = require('mongoose');
-
-const ReparacionSchema = mongoose.Schema({
+const ReparacionSchema = new mongoose.Schema({
   recepcion: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  tecnico: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false }, // Inicialmente puede ser null
+  tecnico: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Asegúrate que ambos apunten a 'User'
+  cliente: { type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: true },
   marca: { type: mongoose.Schema.Types.ObjectId, ref: 'Marca', required: true },
   modelo: { type: String, required: true },
   fechaIngreso: { type: Date, required: true },
   horaIngreso: { type: String, required: true },
-  fechaProgramada: { type: Date, required: true },
-  horaProgramada: { type: String, required: true },
-  fechaReparado: { type: Date, required: false, default: null },
-  horaReparado: { type: String, required: false, default: null },
-  fechaEntregado: { type: Date, required: false, default: null },
-  horaEntregado: { type: String, required: false, default: null },
-  estatus: { type: String, required: true, enum: ['PENDIENTE', 'REPARADO', 'ENTREGADO'] },
+  fechaDiagnostico: { type: Date },
+  horaDiagnostico: { type: String },
+  fechaReparado: { type: Date },
+  horaReparado: { type: String },
+  fechaEntregado: { type: Date },
+  horaEntregado: { type: String },
+  estatus: { type: String, enum: ['PENDIENTE', 'COMPLETADO', 'CANCELADO', 'GARANTIA','SIN REPARACION','ENTREGADO'], default: 'PENDIENTE' },
   cotizacion: { type: Number, required: true },
-  adelanto: { type: Number, required: true },
-  sim: { type: Boolean, required: true },
-  manipulado: { type: Boolean, required: true },
-  mojado: { type: Boolean, required: true },
-  apagado: { type: Boolean, required: true },
-  pantallaRota: { type: Boolean, required: true },
-  tapaRota: { type: Boolean, required: true },
-  descripcion: { type: String, required: true },
-}, { collection: 'reparacion', timestamps: true });
+  adelanto: { type: Number },
+  sim: { type: Boolean },
+  manipulado: { type: Boolean },
+  mojado: { type: Boolean },
+  apagado: { type: Boolean },
+  pantallaRota: { type: Boolean },
+  tapaRota: { type: Boolean },
+  descripcion: { type: String },
+  password: {
+    tipo: { type: String, enum: ['texto', 'digitos', 'patron'], required: true },
+    valor: { type: String, required: true } // Guardará texto, dígitos o el patrón como JSON
+  },
+  fallas: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Falla' }] // Nuevo campo fallas como arreglo de ObjectId referenciando la colección 'Falla'
+});
 
-const Reparacion = mongoose.model('Reparacion', ReparacionSchema);
-module.exports = Reparacion;
+module.exports = mongoose.model('Reparacion', ReparacionSchema, 'reparacion');

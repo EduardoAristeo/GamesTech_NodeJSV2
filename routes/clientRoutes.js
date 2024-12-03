@@ -7,5 +7,7 @@ router.get('/', clientController.getClients);
 router.post('/', clientController.createClient);
 router.put('/:id', clientController.updateClient);
 router.delete('/:id', clientController.deleteClient);
+router.post('/search', clientController.searchClient);
+
 
 module.exports = router;
